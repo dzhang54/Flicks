@@ -15,6 +15,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
     @IBOutlet weak var tableView: UITableView!
     
     var movies: [NSDictionary]?
+    var endpoint: String!
     
     override func viewDidLoad() {
 
@@ -27,8 +28,8 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         refreshControl.addTarget(self, action: "refreshControlAction:", forControlEvents: UIControlEvents.ValueChanged)
         tableView.insertSubview(refreshControl, atIndex: 0)
         
-        let apiKey = "96e631debcab6584b77d29c26c8448d9"
-        let url = NSURL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
+        let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
+        let url = NSURL(string: "https://api.themoviedb.org/3/movie/\(endpoint)?api_key=\(apiKey)")
         let request = NSURLRequest(
             URL: url!,
             cachePolicy: NSURLRequestCachePolicy.ReloadIgnoringLocalCacheData,
@@ -53,7 +54,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
                             print("response: \(responseDictionary)")
                             
               
-                        self.movies = responseDictionary["results"] as! [NSDictionary]
+                        self.movies = responseDictionary["results"] as? [NSDictionary]
                         self.tableView.reloadData()
                             
                     }
@@ -67,7 +68,7 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         
         
         let apiKey = "a07e22bc18f5cb106bfe4cc1f83ad8ed"
-        let url = NSURL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")
+        let url = NSURL(string: "https://api.themoviedb.org/3/movie/\(endpoint)?api_key=\(apiKey)")
         let request = NSURLRequest(URL: url!)
         let session = NSURLSession(
             configuration: NSURLSessionConfiguration.defaultSessionConfiguration(),
@@ -112,14 +113,20 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         let overview = movie["overview"] as! String
         cell.titleLabel.text = title
         cell.overviewLabel.text = overview
-        let posterPath = movie["poster_path"] as! String
         
         let baseURL = "https://image.tmdb.org/t/p/w500"
         
+        if let posterPath = movie["poster_path"] as? String {
+        
         let imageURL = NSURL(string: baseURL + posterPath)
         cell.posterView.setImageWithURL(imageURL!)
+        }
+        // cell.selectionStyle = UITableViewCellSelectionStyle.Gray
         
-        
+        let backgroundView = UIView()
+        backgroundView.backgroundColor = UIColor.lightGrayColor()
+        cell.selectedBackgroundView = backgroundView
+    
         
         print("row \(indexPath.row)")
         return cell
@@ -128,14 +135,21 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
   
     
 
-    /*
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+        
+        let cell = sender as! UITableViewCell
+        let indexPath = tableView.indexPathForCell(cell)
+        let movie = movies![indexPath!.row]
+        let detailViewController = segue.destinationViewController as! DetailsViewController
+        detailViewController.movie = movie
+        
     }
-    */
+    
 
 }
